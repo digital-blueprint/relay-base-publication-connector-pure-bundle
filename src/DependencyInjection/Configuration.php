@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Dbp\Relay\RelayBasePublicationConnectorPureBundle\DependencyInjection;
+namespace Dbp\Relay\BasePublicationConnectorPureBundle\DependencyInjection;
 
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;

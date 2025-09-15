@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Dbp\Relay\RelayBasePublicationConnectorPureBundle\Rest;
+namespace Dbp\Relay\BasePublicationConnectorPureBundle\Rest;
 
 use Dbp\Relay\CoreBundle\Rest\AbstractDataProcessor;
-use Dbp\Relay\RelayBasePublicationConnectorPureBundle\Entity\Publication;
-use Dbp\Relay\RelayBasePublicationConnectorPureBundle\Service\PublicationService;
+use Dbp\Relay\BasePublicationConnectorPureBundle\Entity\Publication;
+use Dbp\Relay\BasePublicationConnectorPureBundle\Service\PublicationService;
 
 class PublicationProcessor extends AbstractDataProcessor
 {

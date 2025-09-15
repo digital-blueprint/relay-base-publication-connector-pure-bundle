@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Dbp\Relay\RelayBasePublicationConnectorPureBundle\Tests;
+namespace Dbp\Relay\BasePublicationConnectorPureBundle\Tests;
 
 use ApiPlatform\Symfony\Bundle\ApiPlatformBundle;
 use Dbp\Relay\CoreBundle\DbpRelayCoreBundle;
-use Dbp\Relay\RelayBasePublicationConnectorPureBundle\DbpRelayRelayBasePublicationConnectorPureBundle;
+use Dbp\Relay\BasePublicationConnectorPureBundle\DbpRelayBasePublicationConnectorPureBundle;
 use Nelmio\CorsBundle\NelmioCorsBundle;
 use Symfony\Bundle\FrameworkBundle\FrameworkBundle;
 use Symfony\Bundle\FrameworkBundle\Kernel\MicroKernelTrait;
@@ -30,7 +30,7 @@ class Kernel extends BaseKernel
         yield new NelmioCorsBundle();
         yield new MonologBundle();
         yield new ApiPlatformBundle();
-        yield new DbpRelayRelayBasePublicationConnectorPureBundle();
+        yield new DbpRelayBasePublicationConnectorPureBundle();
         yield new DbpRelayCoreBundle();
     }
 

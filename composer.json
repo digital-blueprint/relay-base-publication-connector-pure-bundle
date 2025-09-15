@@ -27,12 +27,12 @@
     },
     "autoload": {
         "psr-4": {
-            "Dbp\\Relay\\RelayBasePublicationConnectorPureBundle\\": "src/"
+            "Dbp\\Relay\\BasePublicationConnectorPureBundle\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Dbp\\Relay\\RelayBasePublicationConnectorPureBundle\\Tests\\": "tests/"
+            "Dbp\\Relay\\BasePublicationConnectorPureBundle\\Tests\\": "tests/"
         }
     },
     "config": {

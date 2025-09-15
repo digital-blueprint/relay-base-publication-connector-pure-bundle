@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Dbp\Relay\RelayBasePublicationConnectorPureBundle\Tests;
+namespace Dbp\Relay\BasePublicationConnectorPureBundle\Tests;
 
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 

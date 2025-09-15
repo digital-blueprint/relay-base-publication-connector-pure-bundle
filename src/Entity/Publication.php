@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Dbp\Relay\RelayBasePublicationConnectorPureBundle\Entity;
+namespace Dbp\Relay\BasePublicationConnectorPureBundle\Entity;
 
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
@@ -12,8 +12,8 @@ use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\OpenApi\Model\Operation;
 use ApiPlatform\OpenApi\Model\RequestBody;
-use Dbp\Relay\RelayBasePublicationConnectorPureBundle\Rest\PublicationProcessor;
-use Dbp\Relay\RelayBasePublicationConnectorPureBundle\Rest\PublicationProvider;
+use Dbp\Relay\BasePublicationConnectorPureBundle\Rest\PublicationProcessor;
+use Dbp\Relay\BasePublicationConnectorPureBundle\Rest\PublicationProvider;
 use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ApiResource(

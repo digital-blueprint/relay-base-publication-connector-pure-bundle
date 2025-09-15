@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Dbp\Relay\RelayBasePublicationConnectorPureBundle\Service;
+namespace Dbp\Relay\BasePublicationConnectorPureBundle\Service;
 
-use Dbp\Relay\RelayBasePublicationConnectorPureBundle\Entity\Publication;
+use Dbp\Relay\BasePublicationConnectorPureBundle\Entity\Publication;
 
 class PublicationService
 {

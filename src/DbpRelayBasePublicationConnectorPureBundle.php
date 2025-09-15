@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Dbp\Relay\RelayBasePublicationConnectorPureBundle;
+namespace Dbp\Relay\BasePublicationConnectorPureBundle;
 
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
 
-class DbpRelayRelayBasePublicationConnectorPureBundle extends Bundle
+class DbpRelayBasePublicationConnectorPureBundle extends Bundle
 {
     public function build(ContainerBuilder $container): void
     {

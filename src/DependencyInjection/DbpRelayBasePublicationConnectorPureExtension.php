@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Dbp\Relay\RelayBasePublicationConnectorPureBundle\DependencyInjection;
+namespace Dbp\Relay\BasePublicationConnectorPureBundle\DependencyInjection;
 
 use Dbp\Relay\CoreBundle\Extension\ExtensionTrait;
-use Dbp\Relay\RelayBasePublicationConnectorPureBundle\Service\PublicationService;
+use Dbp\Relay\BasePublicationConnectorPureBundle\Service\PublicationService;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 use Symfony\Component\HttpKernel\DependencyInjection\ConfigurableExtension;
 
-class DbpRelayRelayBasePublicationConnectorPureExtension extends ConfigurableExtension
+class DbpRelayBasePublicationConnectorPureExtension extends ConfigurableExtension
 {
     use ExtensionTrait;
 
