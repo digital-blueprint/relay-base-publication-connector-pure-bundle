@@ -1,0 +1,10 @@
+services:
+  Dbp\Relay\RelayBasePublicationConnectorPureBundle\Rest\:
+    resource: '../../Rest'
+    autowire: true
+    autoconfigure: true
+
+  Dbp\Relay\RelayBasePublicationConnectorPureBundle\Service\:
+    resource: '../../Service'
+    autowire: true
+    autoconfigure: true
