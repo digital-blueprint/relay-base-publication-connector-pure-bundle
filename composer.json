@@ -1,5 +1,5 @@
 {
-    "name": "dbp/relay-relay-base-publication-connector-pure-bundle",
+    "name": "dbp/relay-base-publication-connector-pure-bundle",
     "description": "A template bundle for the Relay API gateway",
     "type": "symfony-bundle",
     "license": "AGPL-3.0-or-later",
