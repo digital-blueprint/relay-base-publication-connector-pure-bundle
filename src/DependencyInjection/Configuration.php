@@ -11,7 +11,7 @@ class Configuration implements ConfigurationInterface
 {
     public function getConfigTreeBuilder(): TreeBuilder
     {
-        $treeBuilder = new TreeBuilder('dbp_relay_relay_base_publication_connector_pure');
+        $treeBuilder = new TreeBuilder('dbp_relay_base_publication_connector_pure');
 
         // append your config definition here
 

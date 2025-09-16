@@ -1,9 +1,4 @@
 services:
-  Dbp\Relay\BasePublicationConnectorPureBundle\Rest\:
-    resource: '../../Rest'
-    autowire: true
-    autoconfigure: true
-
   Dbp\Relay\BasePublicationConnectorPureBundle\Service\:
     resource: '../../Service'
     autowire: true

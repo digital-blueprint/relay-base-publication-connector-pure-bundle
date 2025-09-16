@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Dbp\Relay\BasePublicationConnectorPureBundle\Tests;
 
 use ApiPlatform\Symfony\Bundle\ApiPlatformBundle;
-use Dbp\Relay\CoreBundle\DbpRelayCoreBundle;
 use Dbp\Relay\BasePublicationConnectorPureBundle\DbpRelayBasePublicationConnectorPureBundle;
+use Dbp\Relay\CoreBundle\DbpRelayCoreBundle;
 use Nelmio\CorsBundle\NelmioCorsBundle;
 use Symfony\Bundle\FrameworkBundle\FrameworkBundle;
 use Symfony\Bundle\FrameworkBundle\Kernel\MicroKernelTrait;
@@ -48,6 +48,6 @@ class Kernel extends BaseKernel
             'annotations' => false,
         ]);
 
-        $container->extension('dbp_relay_relay_base_publication_connector_pure', []);
+        $container->extension('dbp_relay_base_publication_connector_pure', []);
     }
 }

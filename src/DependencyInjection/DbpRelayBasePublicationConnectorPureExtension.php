@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Dbp\Relay\BasePublicationConnectorPureBundle\DependencyInjection;
 
-use Dbp\Relay\CoreBundle\Extension\ExtensionTrait;
 use Dbp\Relay\BasePublicationConnectorPureBundle\Service\PublicationService;
+use Dbp\Relay\CoreBundle\Extension\ExtensionTrait;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
@@ -22,8 +22,6 @@ class DbpRelayBasePublicationConnectorPureExtension extends ConfigurableExtensio
             new FileLocator(__DIR__.'/../Resources/config')
         );
         $loader->load('services.yaml');
-
-        $this->addResourceClassDirectory($container, __DIR__.'/../Entity');
 
         $definition = $container->getDefinition(PublicationService::class);
         $definition->addMethodCall('setConfig', [$mergedConfig]);
