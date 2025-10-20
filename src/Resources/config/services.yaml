@@ -1,5 +1,49 @@
 services:
-  Dbp\Relay\BasePublicationConnectorPureBundle\Service\:
-    resource: '../../Service'
-    autowire: true
-    autoconfigure: true
+  # Config service
+  Dbp\Relay\BasePublicationConnectorPureBundle\Service\Config:
+    public: true
+
+  # Pure API Service
+  Dbp\Relay\BasePublicationConnectorPureBundle\Service\PublicationService:
+    public: true
+    arguments:
+      $config: '@Dbp\Relay\BasePublicationConnectorPureBundle\Service\Config'
+
+  # Publication Provider
+  Dbp\Relay\BasePublicationConnectorPureBundle\Service\PurePublicationProvider:
+    public: true
+    arguments:
+      $publicationService: '@Dbp\Relay\BasePublicationConnectorPureBundle\Service\PublicationService'
+
+  # Override the base publication service to use our provider
+  Dbp\Relay\BasePublicationBundle\Service\PublicationService:
+    arguments:
+      $provider: '@Dbp\Relay\BasePublicationConnectorPureBundle\Service\PurePublicationProvider'
+
+      # Debug Author Command
+  Dbp\Relay\BasePublicationConnectorPureBundle\Command\DebugAuthorCommand:
+    arguments:
+      $publicationService: '@Dbp\Relay\BasePublicationConnectorPureBundle\Service\PublicationService'
+    tags:
+      - { name: 'console.command' }
+
+  # List Publications Command
+  Dbp\Relay\BasePublicationConnectorPureBundle\Command\ListPublicationsCommand:
+    arguments:
+      $publicationService: '@Dbp\Relay\BasePublicationConnectorPureBundle\Service\PublicationService'
+    tags:
+      - { name: 'console.command' }
+
+  # Simple Debug Command
+  Dbp\Relay\BasePublicationConnectorPureBundle\Command\SimpleDebugCommand:
+    arguments:
+      $publicationService: '@Dbp\Relay\BasePublicationConnectorPureBundle\Service\PublicationService'
+    tags:
+      - { name: 'console.command' }
+
+  # Debug Not Found Command
+  Dbp\Relay\BasePublicationConnectorPureBundle\Command\DebugNotFoundCommand:
+    arguments:
+      $publicationService: '@Dbp\Relay\BasePublicationConnectorPureBundle\Service\PublicationService'
+    tags:
+      - { name: 'console.command' }
