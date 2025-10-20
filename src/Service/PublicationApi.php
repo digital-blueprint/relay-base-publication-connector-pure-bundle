@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Tugraz\Relay\PublicationBundle\Service;
+namespace Dbp\Relay\BasePublicationConnectorPureBundle\Service;
 
 use Dbp\Relay\CoreBundle\Exception\ApiError;
 use Dbp\Relay\CoreBundle\Helpers\Tools;
 use Dbp\Relay\CoreBundle\Http\Connection;
 use Dbp\Relay\CoreBundle\Http\ConnectionException;
 use Symfony\Component\HttpFoundation\Response;
-use Tugraz\Relay\PublicationBundle\Entity\Publication;
+use Dbp\Relay\BasePublicationBundle\Entity\Publication;
 
 class PublicationApi
 {

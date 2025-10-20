@@ -7,12 +7,21 @@
         "php": ">=8.2",
         "ext-json": "*",
         "api-platform/core": "^3.4 || ^4.1",
+        "dbp/relay-base-publication-bundle": "dev-main",
         "dbp/relay-core-bundle": "^0.1.181",
-        "symfony/framework-bundle": "^6.4",
         "symfony/config": "^6.4",
-        "symfony/http-kernel": "^6.4",
-        "symfony/dependency-injection": "^6.4"
+        "symfony/console": "^6.4",
+        "symfony/dependency-injection": "^6.4",
+        "symfony/framework-bundle": "^6.4",
+        "symfony/http-foundation": "^6.4",
+        "symfony/http-kernel": "^6.4"
     },
+    "repositories": [
+      {
+        "type": "vcs",
+        "url": "git@gitlab.tugraz.at:vpu-private/publications/relay-base-publication-bundle.git"
+      }
+    ],
     "require-dev": {
         "friendsofphp/php-cs-fixer": "^3.50",
         "phpstan/phpstan": "^2.1.17",

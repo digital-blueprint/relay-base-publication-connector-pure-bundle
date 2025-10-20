@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Dbp\Relay\BasePublicationConnectorPureBundle\Tests;
 
 use ApiPlatform\Symfony\Bundle\ApiPlatformBundle;
+use Dbp\Relay\BasePublicationBundle\DbpRelayBasePublicationBundle;
 use Dbp\Relay\BasePublicationConnectorPureBundle\DbpRelayBasePublicationConnectorPureBundle;
 use Dbp\Relay\CoreBundle\DbpRelayCoreBundle;
 use Nelmio\CorsBundle\NelmioCorsBundle;
@@ -30,6 +31,7 @@ class Kernel extends BaseKernel
         yield new NelmioCorsBundle();
         yield new MonologBundle();
         yield new ApiPlatformBundle();
+        yield new DbpRelayBasePublicationBundle();
         yield new DbpRelayBasePublicationConnectorPureBundle();
         yield new DbpRelayCoreBundle();
     }
@@ -48,6 +50,11 @@ class Kernel extends BaseKernel
             'annotations' => false,
         ]);
 
-        $container->extension('dbp_relay_base_publication_connector_pure', []);
+        $container->extension('dbp_relay_base_publication_connector_pure', [
+            'pure' => [
+                'api_url' => 'https://pure.test.api/',
+                'api_key' => 'test_api_key',
+            ],
+        ]);
     }
 }
