@@ -229,7 +229,7 @@
             "source": {
                 "type": "git",
                 "url": "git@gitlab.tugraz.at:vpu-private/publications/relay-base-publication-bundle.git",
-                "reference": "0694c4af6e9aa42da8b9131d4870abeeda9ab86d"
+                "reference": "40b570166cf1a8f68a20ae89289292be78e276a2"
             },
             "require": {
                 "api-platform/core": "^3.4 || ^4.1",
@@ -290,7 +290,7 @@
                 "AGPL-3.0-or-later"
             ],
             "description": "A template bundle for the Relay API gateway",
-            "time": "2025-10-20T10:47:18+00:00"
+            "time": "2025-10-20T12:25:49+00:00"
         },
         {
             "name": "dbp/relay-core-bundle",
