@@ -27,7 +27,6 @@ class PublicationService
     private const PAGE_SIZE_PURE_QUERY_PARAMETER = 'size';
     private const PAGE_NUMBER_PURE_QUERY_PARAMETER = 'offset';
 
-
     private Config $config;
     private ?Connection $connection = null;
 
@@ -50,11 +49,17 @@ class PublicationService
     public function getPublicationById(string $identifier): ?Publication
     {
         $publicationData = $this->tryGetItemDataFromPureBySourceId($identifier);
+
         if ($publicationData === null) {
             return null;
         }
 
-        return $this->mapPureDataToPublication($publicationData, $identifier);
+        $pub = new Publication();
+        $pub->setIdentifier($this->tryGetSourceIdFromItem($publicationData));
+        $pub->setTitle($this->extractTitle($publicationData) ?? 'Untitled Publication');
+        $pub->setUuid($publicationData[self::UUID_PURE_ATTRIBUTE] ?? null);
+
+        return $pub;
     }
 
     /**
@@ -62,24 +67,46 @@ class PublicationService
      */
     public function getPublications(array $filters = [], int $limit = 1000): array
     {
-        $searchString = '';
 
-        if (!empty($filters['search'])) {
-            $searchString = (string) $filters['search']; // cast to string
+        //TODO: fix the perPage logic
+
+        $searchString = $filters['search'] ?? '';
+        $page = max(1, (int)($filters['page'] ?? 1));
+        $perPage = max(1, (int)($filters['perPage'] ?? 50));
+        $perPage = min($perPage, $limit);
+
+        $results = $this->searchPureApi($searchString, $perPage, $page);
+
+        // Map each item only once and only required fields
+        $publications = [];
+        foreach ($results as $itemData) {
+            $identifier = $this->tryGetSourceIdFromItem($itemData);
+            $title = $this->extractTitle($itemData) ?? 'Untitled Publication';
+            $uuid = $itemData[self::UUID_PURE_ATTRIBUTE] ?? null;
+
+            $publication = new \Dbp\Relay\BasePublicationConnectorPureBundle\Entity\Publication();
+            $publication->setIdentifier($identifier);
+            $publication->setTitle($title);
+            $publication->setUuid($uuid);
+
+            $publications[] = $publication;
         }
 
-        $results = $this->searchPureApi($searchString); // now safe
+        return $publications;
 
-        // limit results if needed
-        /*$publications = array_map(
-            fn (array $itemData) => $this->mapPureItemDataToPublication($itemData),
-            $results
-        );*/
-        return array_map(
-            fn(array $itemData) => $this->mapPureItemDataToPublication($itemData),
-            $results
-        );
-        //return array_slice($publications, 0, $limit);
+        /*
+        // Get page and perPage from filters, with defaults
+        $page = isset($filters['page']) ? max(1, (int) $filters['page']) : 1;
+        $perPage = isset($filters['perPage']) ? max(1, (int) $filters['perPage']) : 50;
+
+        // Ensure we do not exceed the limit
+        $perPage = min($perPage, $limit);
+
+        $results = $this->searchPureApi($searchString, $perPage, $page);
+
+        // Only map minimal data: identifier + title
+        return array_map(fn (array $itemData) => $this->mapPureItemDataToPublication($itemData), $results);
+        */
     }
 
     /**
@@ -88,33 +115,21 @@ class PublicationService
      */
     public function getPublicationByIdFromSource(?string $idSource, string $value): ?Publication
     {
-        $resultItem = null;
-
-        // Pass string directly to searchPureApi
-        foreach ($this->searchPureApi($value) as $itemData) {
+        foreach ($this->searchPureApi($value, 5) as $itemData) { // limit search results for speed
             $primaryId = $this->tryGetSourceIdFromItem($itemData);
 
-            // Match either composite id or UUID
             if ($idSource !== null) {
                 if ($primaryId === $idSource.'_'.$value) {
-                    $resultItem = $itemData;
-                    break;
+                    return $this->mapPureDataToPublication($itemData, $primaryId);
                 }
             } else {
                 if ($primaryId === $value || ($itemData['uuid'] ?? null) === $value) {
-                    $resultItem = $itemData;
-                    break;
+                    return $this->mapPureDataToPublication($itemData, $primaryId ?? $value);
                 }
             }
         }
 
-        if ($resultItem === null) {
-            return null;
-        }
-
-        $identifier = $idSource ? $idSource.'_'.$value : $value;
-
-        return $this->mapPureDataToPublication($resultItem, $identifier);
+        return null;
     }
 
     private function buildSearchParameters(array $filters): array
@@ -133,6 +148,17 @@ class PublicationService
     {
         $publication = new Publication();
         $publication->setIdentifier($identifier);
+
+        $titleValue = $publicationData['title'] ?? null;
+
+        if (is_array($titleValue)) {
+            $publication->setTitle($titleValue['value'] ?? $titleValue['en_GB'] ?? $titleValue['de_DE'] ?? current($titleValue));
+        } else {
+            $publication->setTitle($titleValue ?? 'Untitled Publication');
+        }
+
+        $publication->setUuid($publicationData[self::UUID_PURE_ATTRIBUTE] ?? null);
+        /*
         // $publication->setUuid($uuid);
         $publication->setUuid($publicationData[self::UUID_PURE_ATTRIBUTE] ?? null);
         // error_log('PUBLICATION DATA: ' . json_encode($publicationData));
@@ -155,7 +181,7 @@ class PublicationService
 
         // Map authors - try different possible locations for author data
         $authors = $this->extractAuthors($publicationData);
-        $publication->setAuthors($authors);
+        $publication->setAuthors($authors);*/
 
         return $publication;
     }
@@ -298,17 +324,16 @@ class PublicationService
 
     private function tryGetItemDataFromPureBySourceId(string $sourcePrimaryId): ?array
     {
-        $resultItemData = null;
+        $results = $this->searchPureApi($sourcePrimaryId, 1); // fetch only 1 item
 
-        foreach ($this->searchPureApi([self::SEARCH_STRING_PURE_QUERY_PARAMETER => $sourcePrimaryId]) as $itemData) {
+        foreach ($results as $itemData) {
             $primaryId = $this->tryGetSourceIdFromItem($itemData);
-            if ($primaryId !== null && $primaryId === $sourcePrimaryId) {
-                $resultItemData = $itemData;
-                break;
+            if ($primaryId === $sourcePrimaryId) {
+                return $itemData;
             }
         }
 
-        return $resultItemData;
+        return null;
     }
 
     /**
@@ -358,13 +383,16 @@ class PublicationService
      * Wrapper for Pure API search
      * Accepts a string, returns array of results.
      */
-    private function searchPureApi(string $searchString, int $size = 100, int $offset = 0): array
+    private function searchPureApi(string $searchString, int $size = 50, int $page = 1): array
     {
         try {
+            $offset = ($page - 1) * $size; // <-- calculate offset from page
+
             $data = [
                 self::SEARCH_STRING_PURE_QUERY_PARAMETER => $searchString,
                 self::PAGE_SIZE_PURE_QUERY_PARAMETER => $size,
-                'offset' => $offset,
+                self::PAGE_NUMBER_PURE_QUERY_PARAMETER => $offset,
+                'fields' => [self::UUID_PURE_ATTRIBUTE, self::TITLE_PURE_ATTRIBUTE, self::IDENTIFIERS_PURE_ATTRIBUTE] // only fetch required fields
             ];
 
             $response = $this->getConnection()->postJSON(
@@ -372,14 +400,13 @@ class PublicationService
                 $data,
                 $this->getPureApiRequestOptions()
             );
-        } catch (ConnectionException $connectionException) {
-            throw $this->dispatchConnectionException(
-                $connectionException,
-                'Failed to search Pure publications API'
-            );
-        }
 
-        return $this->decodeJson($response->getBody()->getContents())[self::RESULT_ITEMS_PURE_ATTRIBUTE] ?? [];
+            $json = $this->decodeJson($response->getBody()->getContents());
+
+            return $json[self::RESULT_ITEMS_PURE_ATTRIBUTE] ?? [];
+        } catch (ConnectionException $connectionException) {
+            throw $this->dispatchConnectionException($connectionException, 'Failed to search Pure publications API');
+        }
     }
 
     /**

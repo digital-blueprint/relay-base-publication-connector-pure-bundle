@@ -51,27 +51,25 @@ class PurePublicationProvider implements PublicationProviderInterface
     public function getPublications(int $currentPageNumber, int $maxNumItemsPerPage, array $options = []): array
     {
         $filters = [];
+
         if (isset($options['search'])) {
             $filters['search'] = (string) $options['search'];
         } elseif (isset($options['title'])) {
             $filters['search'] = (string) $options['title'];
         }
 
-        // Pagination
-        $offset = ($currentPageNumber - 1) * $maxNumItemsPerPage;
-        // Fetch already mapped Publication objects
-        $purePublicationsData = $this->publicationService->getPublications(
-            $filters,
-            $maxNumItemsPerPage,
-            $offset
-        );
+        // Add page and perPage for optimized API call
+        $filters['page'] = $currentPageNumber;
+        $filters['perPage'] = $maxNumItemsPerPage;
 
-        // Map to BasePublication for API
+        $purePublicationsData = $this->publicationService->getPublications($filters);
+
         return array_map(
             fn(\Dbp\Relay\BasePublicationConnectorPureBundle\Entity\Publication $pub) => $this->mapToBasePublication($pub, $options),
             $purePublicationsData
         );
     }
+
 
 
     private function mapToBasePublication(\Dbp\Relay\BasePublicationConnectorPureBundle\Entity\Publication $publication, array $options = []): BasePublication
