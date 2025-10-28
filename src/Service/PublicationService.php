@@ -67,12 +67,11 @@ class PublicationService
      */
     public function getPublications(array $filters = [], int $limit = 1000): array
     {
-
-        //TODO: fix the perPage logic
+        // TODO: fix the perPage logic
 
         $searchString = $filters['search'] ?? '';
-        $page = max(1, (int)($filters['page'] ?? 1));
-        $perPage = max(1, (int)($filters['perPage'] ?? 50));
+        $page = max(1, (int) ($filters['page'] ?? 1));
+        $perPage = max(1, (int) ($filters['perPage'] ?? 50));
         $perPage = min($perPage, $limit);
 
         $results = $this->searchPureApi($searchString, $perPage, $page);
@@ -84,7 +83,7 @@ class PublicationService
             $title = $this->extractTitle($itemData) ?? 'Untitled Publication';
             $uuid = $itemData[self::UUID_PURE_ATTRIBUTE] ?? null;
 
-            $publication = new \Dbp\Relay\BasePublicationConnectorPureBundle\Entity\Publication();
+            $publication = new Publication();
             $publication->setIdentifier($identifier);
             $publication->setTitle($title);
             $publication->setUuid($uuid);
@@ -392,7 +391,7 @@ class PublicationService
                 self::SEARCH_STRING_PURE_QUERY_PARAMETER => $searchString,
                 self::PAGE_SIZE_PURE_QUERY_PARAMETER => $size,
                 self::PAGE_NUMBER_PURE_QUERY_PARAMETER => $offset,
-                'fields' => [self::UUID_PURE_ATTRIBUTE, self::TITLE_PURE_ATTRIBUTE, self::IDENTIFIERS_PURE_ATTRIBUTE] // only fetch required fields
+                'fields' => [self::UUID_PURE_ATTRIBUTE, self::TITLE_PURE_ATTRIBUTE, self::IDENTIFIERS_PURE_ATTRIBUTE], // only fetch required fields
             ];
 
             $response = $this->getConnection()->postJSON(

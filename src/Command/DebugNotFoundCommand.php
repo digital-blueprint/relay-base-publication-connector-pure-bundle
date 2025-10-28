@@ -1,6 +1,5 @@
 <?php
 
-
 declare(strict_types=1);
 
 namespace Dbp\Relay\BasePublicationConnectorPureBundle\Command;
@@ -46,7 +45,7 @@ class DebugNotFoundCommand extends Command
                 $io->writeln("<info>{$searchType}:</info>");
                 $io->writeln("  Search term: {$result['search_term']}");
                 $io->writeln("  Items found: {$result['items_found']}");
-                $io->writeln("  Identifiers: " . implode(', ', $result['identifiers_found']));
+                $io->writeln('  Identifiers: '.implode(', ', $result['identifiers_found']));
                 $io->newLine();
             }
 
@@ -61,9 +60,9 @@ class DebugNotFoundCommand extends Command
             }
 
             return Command::SUCCESS;
-
         } catch (\Exception $e) {
-            $io->error('Debug failed: ' . $e->getMessage());
+            $io->error('Debug failed: '.$e->getMessage());
+
             return Command::FAILURE;
         }
     }

@@ -40,7 +40,7 @@ class SimpleDebugCommand extends Command
             $connection = $this->publicationService->getConnection();
             $response = $connection->postJSON('research-outputs/search', [
                 'size' => 1,
-                'searchString' => ''
+                'searchString' => '',
             ], [
                 'headers' => [
                     'api-key' => $this->publicationService->getConfig()->getPureApiKey(),
@@ -54,8 +54,9 @@ class SimpleDebugCommand extends Command
             $data = json_decode($contents, true);
 
             if (json_last_error() !== JSON_ERROR_NONE) {
-                $io->error('JSON decode error: ' . json_last_error_msg());
+                $io->error('JSON decode error: '.json_last_error_msg());
                 $io->writeln("Raw response: {$contents}");
+
                 return Command::FAILURE;
             }
 
@@ -73,15 +74,15 @@ class SimpleDebugCommand extends Command
                 // Look for author-related fields
                 $authorFields = [];
                 foreach ($firstItem as $key => $value) {
-                    if (stripos($key, 'person') !== false ||
-                        stripos($key, 'author') !== false ||
-                        stripos($key, 'contributor') !== false) {
+                    if (stripos($key, 'person') !== false
+                        || stripos($key, 'author') !== false
+                        || stripos($key, 'contributor') !== false) {
                         $authorFields[$key] = $value;
                     }
                 }
 
                 if (!empty($authorFields)) {
-                    $io->success('Found author-related fields: ' . implode(', ', array_keys($authorFields)));
+                    $io->success('Found author-related fields: '.implode(', ', array_keys($authorFields)));
                     $io->section('Author-Related Fields Data');
                     foreach ($authorFields as $field => $data) {
                         $io->writeln("<info>{$field}:</info>");
@@ -94,9 +95,9 @@ class SimpleDebugCommand extends Command
             }
 
             return Command::SUCCESS;
-
         } catch (\Exception $e) {
-            $io->error('Simple debug failed: ' . $e->getMessage());
+            $io->error('Simple debug failed: '.$e->getMessage());
+
             return Command::FAILURE;
         }
     }

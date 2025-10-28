@@ -1,6 +1,5 @@
 <?php
 
-
 declare(strict_types=1);
 
 namespace Dbp\Relay\BasePublicationConnectorPureBundle\Command;
@@ -41,6 +40,7 @@ class ListPublicationsCommand extends Command
 
             if (empty($publications)) {
                 $io->warning('No publications found');
+
                 return Command::SUCCESS;
             }
 
@@ -60,9 +60,9 @@ class ListPublicationsCommand extends Command
             $io->note('Use any of these identifiers with the debug-author command');
 
             return Command::SUCCESS;
-
         } catch (\Exception $e) {
-            $io->error('Failed to list publications: ' . $e->getMessage());
+            $io->error('Failed to list publications: '.$e->getMessage());
+
             return Command::FAILURE;
         }
     }

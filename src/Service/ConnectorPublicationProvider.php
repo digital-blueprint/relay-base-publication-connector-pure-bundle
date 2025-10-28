@@ -1,6 +1,5 @@
 <?php
 
-
 declare(strict_types=1);
 
 namespace Dbp\Relay\BasePublicationConnectorPureBundle\Service;
@@ -14,7 +13,7 @@ class ConnectorPublicationProvider implements PublicationProviderInterface
     {
         $publication = new Publication();
         $publication->setIdentifier($identifier);
-        $publication->setName('Connector Stub Publication ' . $identifier);
+        $publication->setName('Connector Stub Publication '.$identifier);
 
         return $publication;
     }

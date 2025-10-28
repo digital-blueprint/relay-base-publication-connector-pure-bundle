@@ -1,6 +1,5 @@
 <?php
 
-
 declare(strict_types=1);
 
 namespace Dbp\Relay\BasePublicationConnectorPureBundle\Command;
@@ -44,6 +43,7 @@ class DebugAuthorCommand extends Command
 
             if (isset($debugInfo['error'])) {
                 $io->error($debugInfo['error']);
+
                 return Command::FAILURE;
             }
 
@@ -77,9 +77,9 @@ class DebugAuthorCommand extends Command
             }
 
             return Command::SUCCESS;
-
         } catch (\Exception $e) {
-            $io->error('Debug failed: ' . $e->getMessage());
+            $io->error('Debug failed: '.$e->getMessage());
+
             return Command::FAILURE;
         }
     }

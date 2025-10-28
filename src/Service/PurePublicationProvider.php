@@ -65,12 +65,10 @@ class PurePublicationProvider implements PublicationProviderInterface
         $purePublicationsData = $this->publicationService->getPublications($filters);
 
         return array_map(
-            fn(\Dbp\Relay\BasePublicationConnectorPureBundle\Entity\Publication $pub) => $this->mapToBasePublication($pub, $options),
+            fn (\Dbp\Relay\BasePublicationConnectorPureBundle\Entity\Publication $pub) => $this->mapToBasePublication($pub, $options),
             $purePublicationsData
         );
     }
-
-
 
     private function mapToBasePublication(\Dbp\Relay\BasePublicationConnectorPureBundle\Entity\Publication $publication, array $options = []): BasePublication
     {
