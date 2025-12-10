@@ -6,7 +6,6 @@
     "require": {
         "php": ">=8.2",
         "ext-json": "*",
-        "api-platform/core": "^4.1",
         "dbp/relay-base-publication-bundle": "^0.1.0",
         "dbp/relay-core-bundle": "^0.1.220",
         "symfony/config": "^6.4",
@@ -17,6 +16,7 @@
         "symfony/http-kernel": "^6.4"
     },
     "require-dev": {
+        "api-platform/symfony": "^4.1",
         "friendsofphp/php-cs-fixer": "^3.50",
         "phpstan/phpstan": "^2.1.17",
         "phpstan/phpstan-phpunit": "^2.0.6",
