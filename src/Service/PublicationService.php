@@ -6,7 +6,6 @@ namespace Dbp\Relay\BasePublicationConnectorPureBundle\Service;
 
 use Dbp\Relay\BasePublicationConnectorPureBundle\Entity\Publication;
 use Dbp\Relay\CoreBundle\Exception\ApiError;
-use Dbp\Relay\CoreBundle\Helpers\Tools;
 use Dbp\Relay\CoreBundle\Http\Connection;
 use Dbp\Relay\CoreBundle\Http\ConnectionException;
 use Symfony\Component\HttpFoundation\Response;
@@ -451,7 +450,7 @@ class PublicationService
     private function decodeJson(string $contents): array
     {
         try {
-            return Tools::decodeJSON($contents, true);
+            return json_decode($contents, true, flags: JSON_THROW_ON_ERROR);
         } catch (\JsonException $exception) {
             throw ApiError::withDetails(Response::HTTP_INTERNAL_SERVER_ERROR, 'Failed to decode response form Pure API', self::INVALID_RESPONSE_FORMAT_ERROR_ID);
         }
