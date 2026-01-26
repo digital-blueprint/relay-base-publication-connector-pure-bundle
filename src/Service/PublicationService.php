@@ -423,9 +423,8 @@ class PublicationService
         } catch (ConnectionException $connectionException) {
             if ($connectionException->getCode() === Response::HTTP_NOT_FOUND) {
                 return null;
-            } else {
-                throw $this->dispatchConnectionException($connectionException, $errorMessage);
             }
+            throw $this->dispatchConnectionException($connectionException, $errorMessage);
         }
     }
 
