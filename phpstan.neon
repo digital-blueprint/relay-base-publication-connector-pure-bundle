@@ -4,6 +4,6 @@ includes:
 
 parameters:
     inferPrivatePropertyTypeFromConstructor: true
-    level: 1
+    level: 3
     paths:
         - src
