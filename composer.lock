@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "93f7648872ec1a0023b0f346eaf07140",
+    "content-hash": "fdd1ec8d035516e08c5240b268a348dc",
     "packages": [
         {
             "name": "api-platform/documentation",
@@ -981,16 +981,16 @@
         },
         {
             "name": "dbp/relay-base-publication-bundle",
-            "version": "v0.1.1",
+            "version": "v0.1.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/digital-blueprint/relay-base-publication-bundle.git",
-                "reference": "96fecc78369b7a86dba4e966e7d781cc2d0648b7"
+                "reference": "dcd08cc5180adc33a0fed091d9203810ff3ef87c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/digital-blueprint/relay-base-publication-bundle/zipball/96fecc78369b7a86dba4e966e7d781cc2d0648b7",
-                "reference": "96fecc78369b7a86dba4e966e7d781cc2d0648b7",
+                "url": "https://api.github.com/repos/digital-blueprint/relay-base-publication-bundle/zipball/dcd08cc5180adc33a0fed091d9203810ff3ef87c",
+                "reference": "dcd08cc5180adc33a0fed091d9203810ff3ef87c",
                 "shasum": ""
             },
             "require": {
@@ -1032,9 +1032,9 @@
             "description": "A template bundle for the Relay API gateway",
             "support": {
                 "issues": "https://github.com/digital-blueprint/relay-base-publication-bundle/issues",
-                "source": "https://github.com/digital-blueprint/relay-base-publication-bundle/tree/v0.1.1"
+                "source": "https://github.com/digital-blueprint/relay-base-publication-bundle/tree/v0.1.2"
             },
-            "time": "2025-12-09T12:47:37+00:00"
+            "time": "2026-02-26T13:18:00+00:00"
         },
         {
             "name": "dbp/relay-core-bundle",
