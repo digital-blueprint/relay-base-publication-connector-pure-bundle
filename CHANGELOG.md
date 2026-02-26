@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.1.3
+
+* Various improvements and bug fixes
+
 ## v0.1.2
 
 * Fix CLI commands missing with Symfony 7
