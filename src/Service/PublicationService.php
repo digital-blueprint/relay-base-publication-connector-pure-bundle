@@ -130,19 +130,20 @@ class PublicationService
             $uuid = $itemData[self::UUID_PURE_ATTRIBUTE] ?? null;
 
             // Create CONNECTOR Publication object, not BASE Publication
-            $publication = new \Dbp\Relay\BasePublicationBundle\Entity\Publication();
+            $publication = new Publication();
             $publication->setIdentifier($identifier);
             $publication->setName($title);
             $publication->setUuid($uuid);
 
             $publicationsWithData[] = [
                 'publication' => $publication,  // Connector Publication
-                'rawData' => $itemData
+                'rawData' => $itemData,
             ];
         }
 
         return $publicationsWithData;
     }
+
     /**
      * Get a publication by idSource and value.
      * If $idSource is null, fallback to matching only by value or UUID.

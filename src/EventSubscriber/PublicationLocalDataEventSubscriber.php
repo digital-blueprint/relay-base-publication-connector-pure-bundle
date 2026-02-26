@@ -42,5 +42,4 @@ class PublicationLocalDataEventSubscriber extends AbstractLocalDataEventSubscrib
             default => 'de_DE',
         };
     }
-
 }
