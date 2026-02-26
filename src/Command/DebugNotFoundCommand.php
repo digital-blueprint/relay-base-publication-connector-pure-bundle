@@ -54,7 +54,7 @@ class DebugNotFoundCommand extends Command
             $publication = $this->publicationService->getPublicationById($identifier);
             if ($publication) {
                 $io->success('Publication found directly!');
-                $io->writeln("Title: {$publication->getTitle()}");
+                $io->writeln("Title: {$publication->getName()}");
             } else {
                 $io->error('Publication still not found with direct lookup');
             }
