@@ -2,29 +2,58 @@
 
 declare(strict_types=1);
 
+namespace Dbp\Relay\BasePublicationConnectorPureBundle\DataProvider;
+
 namespace Dbp\Relay\BasePublicationConnectorPureBundle\Service;
 
 use Dbp\Relay\BasePublicationBundle\API\PublicationProviderInterface;
-use Dbp\Relay\BasePublicationBundle\Entity\Publication as BasePublication;
+use Dbp\Relay\BasePublicationBundle\Entity\Publication;
+use Dbp\Relay\BasePublicationConnectorPureBundle\Event\PublicationPostEvent;
+use Dbp\Relay\BasePublicationConnectorPureBundle\Event\PublicationPreEvent;
 use Dbp\Relay\CoreBundle\Exception\ApiError;
-use Dbp\Relay\CoreBundle\Locale\Locale;
+use Dbp\Relay\CoreBundle\LocalData\LocalDataEventDispatcher;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Response;
 
 class PurePublicationProvider implements PublicationProviderInterface
 {
     private PublicationService $publicationService;
+    private LocalDataEventDispatcher $eventDispatcher;
 
-    public function __construct(PublicationService $publicationService)
-    {
+    public function __construct(
+        PublicationService $publicationService,
+        EventDispatcherInterface $dispatcher // Inject Symfony's EventDispatcher
+    ) {
         $this->publicationService = $publicationService;
+        $this->eventDispatcher = new LocalDataEventDispatcher(
+            Publication::class,
+            $dispatcher
+        );
+        // $this->eventDispatcher = new LocalDataEventDispatcher(BasePublication::class, $dispatcher);
+    }
+
+    // Add setter method if needed later
+    public function setEventDispatcher($eventDispatcher): void
+    {
+        $this->eventDispatcher = $eventDispatcher;
     }
 
     /**
      * @throws ApiError
      */
-    public function getPublicationById(string $identifier, array $options = []): BasePublication
+    public function getPublicationById(string $identifier, array $options = []): Publication
     {
-        // Split identifier into idSource and value if it contains "_"
+        // 1. Notify dispatcher
+        $this->eventDispatcher?->onNewOperation($options);
+
+        // 2. Pre-event (optional but fine)
+        $preEvent = new PublicationPreEvent($options, $identifier);
+        $this->eventDispatcher?->dispatch($preEvent);
+
+        $options = $preEvent->getOptions();
+        $identifier = $preEvent->getIdentifier() ?? $identifier;
+
+        // 3. Parse Relay identifier → PURE source + value
         $idSource = null;
         $value = $identifier;
 
@@ -32,107 +61,146 @@ class PurePublicationProvider implements PublicationProviderInterface
             [$idSource, $value] = explode('_', $identifier, 2);
         }
 
-        // Call connector service with split values
-        $publication = $this->publicationService->getPublicationByIdFromSource($idSource, $value);
+        // 4. Fetch PURE publication (PURE object)
+        $purePublication = $this->publicationService
+            ->getPublicationByIdFromSource($idSource, $value);
 
-        if ($publication === null) {
-            throw ApiError::withDetails(Response::HTTP_NOT_FOUND,
+        if ($purePublication === null) {
+            throw ApiError::withDetails(
+                Response::HTTP_NOT_FOUND,
                 "Publication with identifier '$identifier' not found",
                 'publication:not-found',
-                [$identifier]);
+                [$identifier]
+            );
         }
 
-        return $this->mapToBasePublication($publication, $options);
+        // 4. Create base publication
+        $basePublication = new Publication();
+        $basePublication->setIdentifier($purePublication->getIdentifier());
+        // Set basic fields
+        if (method_exists($purePublication, 'getName') && $purePublication->getName()) {
+            $basePublication->setName($purePublication->getName());
+        } elseif (method_exists($purePublication, 'getTitle') && $purePublication->getTitle()) {
+            $basePublication->setName($purePublication->getTitle());
+        } else {
+            $basePublication->setName('Publication '.$purePublication->getIdentifier());
+        }
+
+        if (method_exists($purePublication, 'getUuid') && $purePublication->getUuid()) {
+            $basePublication->setUuid($purePublication->getUuid());
+        }
+
+        // 5. Fetch PURE raw data using PURE VALUE ONLY
+        $rawData = $this->publicationService
+            ->tryGetItemDataFromPureBySourceId($value);
+
+        // 6. Map PURE → BASE
+        $basePublication = $this->mapToBasePublication($purePublication, $options);
+
+        // 7. Attach local data DIRECTLY
+        if ($rawData !== null) {
+            $basePublication->setLocalData($rawData);
+        }
+
+        // 8. Optional post-event (now actually meaningful)
+        if ($rawData !== null) {
+            $postEvent = new PublicationPostEvent($basePublication, $rawData);
+            $this->eventDispatcher?->dispatch($postEvent);
+        }
+
+        return $basePublication;
     }
 
     /**
      * @throws ApiError
      */
-    public function getPublications(int $currentPageNumber, int $maxNumItemsPerPage, array $options = []): array
-    {
+    public function getPublications(
+        int $currentPageNumber,
+        int $maxNumItemsPerPage,
+        array $options = []
+    ): array {
+        $basePublications = [];
+
+        // 1. Notify event dispatcher
+        $this->eventDispatcher->onNewOperation($options);
+
+        // 2. Dispatch pre-event
+        $preEvent = new PublicationPreEvent($options);
+        $this->eventDispatcher->dispatch($preEvent);
+        $options = $preEvent->getOptions();
+
         $filters = [];
 
-        if (isset($options['search'])) {
+        if (!empty($options['search'])) {
             $filters['search'] = (string) $options['search'];
-        } elseif (isset($options['title'])) {
-            $filters['search'] = (string) $options['title'];
         }
 
-        // Add page and perPage for optimized API call
         $filters['page'] = $currentPageNumber;
         $filters['perPage'] = $maxNumItemsPerPage;
 
-        $purePublicationsData = $this->publicationService->getPublications($filters);
+        // Fetch publications WITH raw data
+        $publicationsWithData = $this->publicationService->getPublicationsWithRawData($filters);
 
-        return array_map(
-            fn (\Dbp\Relay\BasePublicationConnectorPureBundle\Entity\Publication $pub) => $this->mapToBasePublication($pub, $options),
-            $purePublicationsData
-        );
+        foreach ($publicationsWithData as $item) {
+            // Access as ARRAY (debug confirms it's an array)
+            $publication = $item['publication'];
+            $rawData = $item['rawData'];
+
+            // Publication is already populated, just dispatch post event
+            if ($rawData !== null) {
+                $postEvent = new PublicationPostEvent($publication, $rawData, $options);
+                $this->eventDispatcher->dispatch($postEvent);
+            }
+
+            $basePublications[] = $publication;
+        }
+
+        return $basePublications;
     }
 
-    private function mapToBasePublication(\Dbp\Relay\BasePublicationConnectorPureBundle\Entity\Publication $publication, array $options = []): BasePublication
+    /**
+     * Helper method to get raw publication data from Pure API
+     * This is needed for the event dispatcher.
+     */
+    public function getRawPublicationData(string $identifier): ?array
     {
-        $basePublication = new BasePublication();
-        $basePublication->setIdentifier($publication->getIdentifier());
+        // return $this->publicationService->getRawPublicationData($identifier);
+        // return $this->publicationService->tryGetItemDataFromPureBySourceId($identifier);
+        return $this->publicationService->tryGetItemDataFromPureBySourceId($identifier);
+    }
 
-        // map UUID if supported
-        if (method_exists($basePublication, 'setUuid')) {
-            $uuid = $publication->getUuid();
-            // error_log("MAPPING UUID: " . ($uuid ?? 'null'));
-            $basePublication->setUuid($uuid);
+    private function mapToBasePublication(Publication $publication, array $options = []): Publication
+    {
+        // IMPORTANT:
+        // $publication is ALREADY a BasePublication
+        // Do NOT create a new instance
+
+        // Ensure identifier exists (should already be set)
+        if ($publication->getIdentifier() === null) {
+            throw new \LogicException('BasePublication has no identifier');
         }
 
-        // Handle language option for title and abstract
-        $language = $options[Locale::LANGUAGE_OPTION] ?? 'en';
-
-        // Map title to name (base publication entity uses setName instead of setTitle)
-        if (method_exists($basePublication, 'setName')) {
-            $basePublication->setName($publication->getTitle());
-        } elseif (method_exists($basePublication, 'setTitle')) {
-            $basePublication->setTitle($publication->getTitle());
+        // Ensure UUID exists if available
+        if ($publication->getUuid() === null && isset($options['uuid'])) {
+            $publication->setUuid($options['uuid']);
         }
 
-        // Map description/abstract
-        if (method_exists($basePublication, 'setDescription')) {
-            $basePublication->setDescription($publication->getAbstract());
+        // Ensure name exists
+        if ($publication->getName() === null) {
+            $publication->setName('Untitled Publication');
         }
 
-        // Map URL
-        if (method_exists($basePublication, 'setUrl')) {
-            $basePublication->setUrl($publication->getUrl());
+        // Authors: only set if missing and available via options
+        if ($publication->getAuthors() === null && isset($options['authors'])) {
+            $publication->setAuthors($options['authors']);
         }
 
-        // Map DOI
-        if (method_exists($basePublication, 'setDoi')) {
-            $basePublication->setDoi($publication->getDoi());
-        }
+        // DO NOT touch:
+        // - localData
+        // - localDataValue
+        // - identifier
+        // - uuid if already set
 
-        // Map publication date
-        if (method_exists($basePublication, 'setPublicationDate')) {
-            $basePublication->setPublicationDate($publication->getPublicationDate());
-        }
-
-        // Map authors - try different methods to include author information
-        $authors = $publication->getAuthors();
-        if (!empty($authors)) {
-            // Method 1: Set as formatted string if the base entity supports setAuthors
-            if (method_exists($basePublication, 'setAuthors')) {
-                $basePublication->setAuthors($publication->getAuthorsFormatted());
-            }
-
-            // Method 2: Set as custom field if available
-            if (method_exists($basePublication, 'setAuthor')) {
-                $basePublication->setAuthor($publication->getAuthorsFormatted());
-            }
-
-            // Method 3: Add to description if authors field doesn't exist
-            if (!method_exists($basePublication, 'setAuthors') && !method_exists($basePublication, 'setAuthor')) {
-                $currentDescription = $basePublication->getDescription() ?? '';
-                $authorsText = 'Authors: '.$publication->getAuthorsFormatted();
-                $basePublication->setDescription($currentDescription."\n\n".$authorsText);
-            }
-        }
-
-        return $basePublication;
+        return $publication;
     }
 }

@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace Dbp\Relay\BasePublicationConnectorPureBundle\Service;
 
-use Dbp\Relay\BasePublicationConnectorPureBundle\Entity\Publication;
+use Dbp\Relay\BasePublicationBundle\Entity\Publication;
 use Dbp\Relay\CoreBundle\Exception\ApiError;
 use Dbp\Relay\CoreBundle\Http\Connection;
 use Dbp\Relay\CoreBundle\Http\ConnectionException;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 class PublicationService
 {
@@ -29,7 +30,7 @@ class PublicationService
     private Config $config;
     private ?Connection $connection = null;
 
-    public function __construct(Config $config)
+    public function __construct(Config $config, private EventDispatcherInterface $eventDispatcher)
     {
         $this->config = $config;
     }
@@ -55,7 +56,7 @@ class PublicationService
 
         $pub = new Publication();
         $pub->setIdentifier($this->tryGetSourceIdFromItem($publicationData));
-        $pub->setTitle($this->extractTitle($publicationData) ?? 'Untitled Publication');
+        $pub->setName($this->extractTitle($publicationData) ?? 'Untitled Publication');
         $pub->setUuid($publicationData[self::UUID_PURE_ATTRIBUTE] ?? null);
 
         return $pub;
@@ -83,8 +84,9 @@ class PublicationService
             $uuid = $itemData[self::UUID_PURE_ATTRIBUTE] ?? null;
 
             $publication = new Publication();
+
             $publication->setIdentifier($identifier);
-            $publication->setTitle($title);
+            // $publication->setName($title);
             $publication->setUuid($uuid);
 
             $publications[] = $publication;
@@ -107,6 +109,40 @@ class PublicationService
         */
     }
 
+    // In PublicationService.php
+    public function getPublicationsWithRawData(array $filters = [], int $limit = 1000): array
+    {
+        $searchString = $filters['search'] ?? '';
+        $page = max(1, (int) ($filters['page'] ?? 1));
+        $perPage = max(1, (int) ($filters['perPage'] ?? 50));
+        $perPage = min($perPage, $limit);
+
+        $results = $this->searchPureApi($searchString, $perPage, $page);
+
+        $publicationsWithData = [];
+        foreach ($results as $itemData) {
+            $identifier = $this->tryGetSourceIdFromItem($itemData);
+            if (!$identifier) {
+                continue;
+            }
+
+            $title = $this->extractTitle($itemData) ?? 'Untitled Publication';
+            $uuid = $itemData[self::UUID_PURE_ATTRIBUTE] ?? null;
+
+            // Create CONNECTOR Publication object, not BASE Publication
+            $publication = new \Dbp\Relay\BasePublicationBundle\Entity\Publication();
+            $publication->setIdentifier($identifier);
+            $publication->setName($title);
+            $publication->setUuid($uuid);
+
+            $publicationsWithData[] = [
+                'publication' => $publication,  // Connector Publication
+                'rawData' => $itemData
+            ];
+        }
+
+        return $publicationsWithData;
+    }
     /**
      * Get a publication by idSource and value.
      * If $idSource is null, fallback to matching only by value or UUID.
@@ -150,9 +186,9 @@ class PublicationService
         $titleValue = $publicationData['title'] ?? null;
 
         if (is_array($titleValue)) {
-            $publication->setTitle($titleValue['value'] ?? $titleValue['en_GB'] ?? $titleValue['de_DE'] ?? current($titleValue));
+            $publication->setName($titleValue['value'] ?? $titleValue['en_GB'] ?? $titleValue['de_DE'] ?? current($titleValue));
         } else {
-            $publication->setTitle($titleValue ?? 'Untitled Publication');
+            $publication->setName($titleValue ?? 'Untitled Publication');
         }
 
         $publication->setUuid($publicationData[self::UUID_PURE_ATTRIBUTE] ?? null);
@@ -320,14 +356,44 @@ class PublicationService
         return null;
     }
 
-    private function tryGetItemDataFromPureBySourceId(string $sourcePrimaryId): ?array
+    public function tryGetItemDataFromPureBySourceId(string $identifier): ?array
     {
-        $results = $this->searchPureApi($sourcePrimaryId, 1); // fetch only 1 item
+        // Extract source/value if composite identifier is used
+        $idSource = null;
+        $value = $identifier;
+
+        if (str_contains($identifier, '_')) {
+            [$idSource, $value] = explode('_', $identifier, 2);
+        }
+
+        // Search with value only (Pure understands this better)
+        $results = $this->searchPureApi($value, 10);
 
         foreach ($results as $itemData) {
+            // 1) Match via extracted Pure source identifier
             $primaryId = $this->tryGetSourceIdFromItem($itemData);
-            if ($primaryId === $sourcePrimaryId) {
+            if ($primaryId === $identifier) {
                 return $itemData;
+            }
+
+            // 2) Match via UUID (VERY IMPORTANT)
+            if (
+                isset($itemData[self::UUID_PURE_ATTRIBUTE])
+                && $itemData[self::UUID_PURE_ATTRIBUTE] === $value
+            ) {
+                return $itemData;
+            }
+
+            // 3) Match by idSource + value
+            if ($idSource !== null) {
+                foreach ($itemData[self::IDENTIFIERS_PURE_ATTRIBUTE] ?? [] as $id) {
+                    if (
+                        ($id['idSource'] ?? null) === $idSource
+                        && ($id['value'] ?? null) === $value
+                    ) {
+                        return $itemData;
+                    }
+                }
             }
         }
 
@@ -448,11 +514,17 @@ class PublicationService
      */
     private function decodeJson(string $contents): array
     {
-        try {
-            return json_decode($contents, true, flags: JSON_THROW_ON_ERROR);
-        } catch (\JsonException $exception) {
-            throw ApiError::withDetails(Response::HTTP_INTERNAL_SERVER_ERROR, 'Failed to decode response form Pure API', self::INVALID_RESPONSE_FORMAT_ERROR_ID);
+        $data = json_decode($contents, true, 512, JSON_THROW_ON_ERROR);
+
+        if (!is_array($data)) {
+            throw ApiError::withDetails(
+                Response::HTTP_INTERNAL_SERVER_ERROR,
+                'Pure API returned invalid JSON structure',
+                self::INVALID_RESPONSE_FORMAT_ERROR_ID
+            );
         }
+
+        return $data;
     }
 
     public function getConnection(): Connection

@@ -1,49 +1,29 @@
+# services.yaml
 services:
   # Config service
   Dbp\Relay\BasePublicationConnectorPureBundle\Service\Config:
-    public: true
+    autowire: true
+    autoconfigure: true
 
   # Pure API Service
   Dbp\Relay\BasePublicationConnectorPureBundle\Service\PublicationService:
-    public: true
-    arguments:
-      $config: '@Dbp\Relay\BasePublicationConnectorPureBundle\Service\Config'
+    autowire: true
+    autoconfigure: true
+#    arguments:
+#      $config: '@Dbp\Relay\BasePublicationConnectorPureBundle\Service\Config'
+#      $eventDispatcher: '@event_dispatcher'
+
+  Dbp\Relay\BasePublicationConnectorPureBundle\EventSubscriber\PublicationLocalDataEventSubscriber:
+    autowire: true
+    autoconfigure: true
 
   # Publication Provider
   Dbp\Relay\BasePublicationConnectorPureBundle\Service\PurePublicationProvider:
-    public: true
-    arguments:
-      $publicationService: '@Dbp\Relay\BasePublicationConnectorPureBundle\Service\PublicationService'
+    #public: true
+    autowire: true
+    autoconfigure: true
 
-  # Override the base publication service to use our provider
-  Dbp\Relay\BasePublicationBundle\Service\PublicationService:
-    arguments:
-      $provider: '@Dbp\Relay\BasePublicationConnectorPureBundle\Service\PurePublicationProvider'
 
-      # Debug Author Command
-  Dbp\Relay\BasePublicationConnectorPureBundle\Command\DebugAuthorCommand:
-    arguments:
-      $publicationService: '@Dbp\Relay\BasePublicationConnectorPureBundle\Service\PublicationService'
-    tags:
-      - { name: 'console.command' }
-
-  # List Publications Command
-  Dbp\Relay\BasePublicationConnectorPureBundle\Command\ListPublicationsCommand:
-    arguments:
-      $publicationService: '@Dbp\Relay\BasePublicationConnectorPureBundle\Service\PublicationService'
-    tags:
-      - { name: 'console.command' }
-
-  # Simple Debug Command
-  Dbp\Relay\BasePublicationConnectorPureBundle\Command\SimpleDebugCommand:
-    arguments:
-      $publicationService: '@Dbp\Relay\BasePublicationConnectorPureBundle\Service\PublicationService'
-    tags:
-      - { name: 'console.command' }
-
-  # Debug Not Found Command
-  Dbp\Relay\BasePublicationConnectorPureBundle\Command\DebugNotFoundCommand:
-    arguments:
-      $publicationService: '@Dbp\Relay\BasePublicationConnectorPureBundle\Service\PublicationService'
-    tags:
-      - { name: 'console.command' }
+  # Interface override
+  Dbp\Relay\BasePublicationBundle\API\PublicationProviderInterface:
+    '@Dbp\Relay\BasePublicationConnectorPureBundle\Service\PurePublicationProvider'

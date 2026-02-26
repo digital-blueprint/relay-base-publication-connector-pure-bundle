@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Dbp\Relay\BasePublicationConnectorPureBundle\DependencyInjection;
 
+use Dbp\Relay\BasePublicationConnectorPureBundle\EventSubscriber\PublicationLocalDataEventSubscriber;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
 
@@ -12,7 +13,11 @@ class Configuration implements ConfigurationInterface
     public function getConfigTreeBuilder(): TreeBuilder
     {
         $treeBuilder = new TreeBuilder('dbp_relay_base_publication_connector_pure');
-        $treeBuilder->getRootNode()
+
+        /** @var \Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition $rootNode */
+        $rootNode = $treeBuilder->getRootNode();
+
+        $rootNode
             ->children()
             ->arrayNode('pure')
             ->isRequired()
@@ -31,6 +36,9 @@ class Configuration implements ConfigurationInterface
             ->end()
             ->end()
             ->end();
+
+        // local data mapping configuration
+        $rootNode->append(PublicationLocalDataEventSubscriber::getLocalDataMappingConfigNodeDefinition());
 
         return $treeBuilder;
     }

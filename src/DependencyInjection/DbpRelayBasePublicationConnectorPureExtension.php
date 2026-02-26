@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Dbp\Relay\BasePublicationConnectorPureBundle\DependencyInjection;
 
+use Dbp\Relay\BasePublicationConnectorPureBundle\EventSubscriber\PublicationLocalDataEventSubscriber;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
@@ -21,5 +22,11 @@ class DbpRelayBasePublicationConnectorPureExtension extends ConfigurableExtensio
 
         $definition = $container->getDefinition('Dbp\Relay\BasePublicationConnectorPureBundle\Service\Config');
         $definition->addMethodCall('setConfig', [$mergedConfig]);
+
+        /*$container->getDefinition(PublicationLocalDataEventSubscriber::class)
+            ->addMethodCall('setConfig', [$mergedConfig]);*/
+
+        $postEventSubscriber = $container->getDefinition(PublicationLocalDataEventSubscriber::class);
+        $postEventSubscriber->addMethodCall('setConfig', [$mergedConfig]);
     }
 }

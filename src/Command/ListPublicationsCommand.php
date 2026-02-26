@@ -51,7 +51,7 @@ class ListPublicationsCommand extends Command
                 $rows[] = [
                     $index + 1,
                     $publication->getIdentifier(),
-                    $publication->getTitle(),
+                    $publication->getName(),
                 ];
             }
 
