@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.1.4
+
+* Fix service not being registered
+
 ## v0.1.3
 
 * Various improvements and bug fixes

@@ -22,3 +22,7 @@ services:
     #public: true
     autowire: true
     autoconfigure: true
+
+  # Interface override
+  Dbp\Relay\BasePublicationBundle\API\PublicationProviderInterface:
+    '@Dbp\Relay\BasePublicationConnectorPureBundle\Service\PurePublicationProvider'
