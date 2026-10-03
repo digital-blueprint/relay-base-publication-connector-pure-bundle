@@ -16,7 +16,7 @@
         "symfony/http-kernel": "^6.4 || ^7.4"
     },
     "require-dev": {
-        "api-platform/symfony": "^4.1",
+        "api-platform/symfony": "^5.0",
         "friendsofphp/php-cs-fixer": "^3.50",
         "phpstan/phpstan": "^2.1.17",
         "phpstan/phpstan-phpunit": "^2.0.6",
