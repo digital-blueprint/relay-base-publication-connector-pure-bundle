@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.1.5
+
+* Minor dependency cleanups
+
 ## v0.1.4
 
 * Fix service not being registered
